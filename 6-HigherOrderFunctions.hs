@@ -237,3 +237,70 @@ reverse3 = foldl (flip (:)) []
 -- scanl and scanr are like foldl and foldr
 -- scanl1 and scanr1 are like foldl1 and foldr1
 -- report all the intermediate accumulator states in the form of a list
+
+-- Example
+-- scanr (*) 2 [3,4,5]
+-- [5*4*3*2,5*4*2,5*2,2] = [120,40,10,2]
+-- scanl (*) 2 [3,4,5]
+-- [2,2*3,2*3*4,2*3*4*5]
+-- scanl1 (\acc x -> if x>acc then x else acc) [3,4,5,3,7,9,2,1]
+-- [3,4,5,5,7,9,9,9]
+-- scanr1 (\x acc -> if x>acc then x else acc) [3,4,5,3,7,9,2,1]
+-- [9,9,9,9,9,9,2,1]
+-- scanl (flip (:)) [] [3,2,1]
+-- [[],[3],[2,3],[1,2,3]]
+
+-- scan functions are used to monitor the progression of a function that can be implemented as a fold
+
+-- Question: How many elements does it take for the sum of the roots of all natural numbers to exceed 1000?
+-- Answer:
+sqrtNum :: Int
+sqrtNum = length (takeWhile (<1000) (scanl (+) 0 (map sqrt [1..]))) + 1
+-- map sqrt [1..] : roots of all natural number
+-- scanl (+) 0 ... : calculate the sum
+-- takeWhile (<1000) ... : take all the sum below 1000, return a list
+-- length ... : length of the list
+-- ... +1 : plus the first one exceed 1000
+
+-- Function Application With $
+-- ($) :: (a -> b) -> a -> b
+-- right-associative function
+
+-- Note: f a b c == ((f a) b) c left-associative
+
+-- Example
+-- sqrt 4 + 12 = 2 + 12 = 14.0
+-- sqrt $ 4 + 12 = sqrt 16 = 4.0
+
+-- sum (filter (>10) (map (*2) [2..10])) == sum $ filter (>10) (map (*2) [1..10])
+-- omit the (..)
+
+-- map ($ 3) [(4+), (10*), (^2), sqrt] = [7.0,30.0,9.0,1.7320508075688772]
+-- $ means that function application can be treated just like another function
+-- can map function application over a list of functions
+
+-- Function Composition
+-- composing two functions produces a new function
+-- (.) :: (b -> c) -> (a -> b) -> a -> c
+-- f . g = \x -> f (g x)
+-- f must take as its parameter a value that has the same type as g's return value
+-- the resulting function takes a parameter of the same type that g takes and returns a value of the same type that f returns
+-- (f . g . z) x = f (g (z x))
+
+-- a point free style function is more readable and concise
+-- fn x = ceiling (negate (tan (cos (max 50 x))))
+-- that is
+-- fn = ceiling . negate .tan . cos . max 50
+-- think more about function
+
+oddSquareSum :: Integer
+oddSquareSum = sum (takeWhile (<10000) (filter odd (map (^2) [1..])))
+
+oddSquareSum1 :: Integer
+oddSquareSum1 = sum . takeWhile (<10000) . filter odd . map (^2) $ [1..]
+
+oddSquareSum2 :: Integer
+oddSquareSum2 =
+    let oddSquares = filter odd . map (^2) $ [1..]
+        belowLimit = takeWhile (<10000) oddSquares
+    in sum belowLimit
